@@ -26,7 +26,7 @@
 
 
 
-## <a name="BSBuffer">type</a> [BSBuffer](/src/target/bsbuffer.go?s=360:591#L7)
+## <a name="BSBuffer">type</a> [BSBuffer](bsbuffer.go?s=360:591#L7)
 ``` go
 type BSBuffer struct {
     sync.Mutex
@@ -44,7 +44,7 @@ Could be unblocked and turned into SBuffer.
 
 
 
-### <a name="NewBSBuffer">func</a> [NewBSBuffer](/src/target/bsbuffer.go?s=617:645#L22)
+### <a name="NewBSBuffer">func</a> [NewBSBuffer](bsbuffer.go?s=617:645#L22)
 ``` go
 func NewBSBuffer() *BSBuffer
 ```
@@ -54,7 +54,7 @@ Creates new BSBuffer
 
 
 
-### <a name="BSBuffer.Read">func</a> (\*BSBuffer) [Read](/src/target/bsbuffer.go?s=1321:1373#L53)
+### <a name="BSBuffer.Read">func</a> (\*BSBuffer) [Read](bsbuffer.go?s=1321:1373#L53)
 ``` go
 func (b *BSBuffer) Read(p []byte) (n int, err error)
 ```
@@ -65,7 +65,7 @@ Supports multiple concurrent goroutines and p is valid forever.
 
 
 
-### <a name="BSBuffer.Unblock">func</a> (\*BSBuffer) [Unblock](/src/target/bsbuffer.go?s=2501:2529#L98)
+### <a name="BSBuffer.Unblock">func</a> (\*BSBuffer) [Unblock](bsbuffer.go?s=2501:2529#L98)
 ``` go
 func (b *BSBuffer) Unblock()
 ```
@@ -75,7 +75,7 @@ Unblock() is safe to call multiple times.
 
 
 
-### <a name="BSBuffer.Write">func</a> (\*BSBuffer) [Write](/src/target/bsbuffer.go?s=1988:2041#L75)
+### <a name="BSBuffer.Write">func</a> (\*BSBuffer) [Write](bsbuffer.go?s=1988:2041#L75)
 ``` go
 func (b *BSBuffer) Write(p []byte) (n int, err error)
 ```
