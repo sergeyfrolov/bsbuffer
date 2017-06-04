@@ -18,8 +18,8 @@ type BSBuffer struct {
 	sync.Mutex
 	bufIn       bytes.Buffer
 	bufOut      bytes.Buffer
-	r           io.PipeReader
-	w           io.PipeWriter
+	r           *io.PipeReader
+	w           *io.PipeWriter
 
 	hasData     chan bool
 	engineExit  chan bool
@@ -45,9 +45,9 @@ func (b *BSBuffer) engine() {
 		select {
 		case _ = <-b.hasData:
 			b.Lock()
-			b.bufOut.ReadFrom(b.bufIn)
-			b.Unlock()
+			b.bufOut.ReadFrom(&b.bufIn)
 			_, err := b.bufOut.WriteTo(b.w)
+			b.Unlock()
 			if b.unblocked || err != nil {
 				b.r.Close()
 				close(b.engineExit)
