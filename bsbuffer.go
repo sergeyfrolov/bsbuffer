@@ -16,14 +16,14 @@ import (
 // Could be unblocked and turned into SBuffer.
 type BSBuffer struct {
 	sync.Mutex
-	bufIn       bytes.Buffer
-	bufOut      bytes.Buffer
-	r           *io.PipeReader
-	w           *io.PipeWriter
+	bufIn  bytes.Buffer
+	bufOut bytes.Buffer
+	r      *io.PipeReader
+	w      *io.PipeWriter
 
-	hasData     chan bool
-	engineExit  chan bool
-	unblocked   bool
+	hasData    chan struct{}
+	engineExit chan struct{}
+	unblocked  bool
 
 	unblockOnce sync.Once
 }
@@ -34,8 +34,8 @@ func NewBSBuffer() *BSBuffer {
 
 	bsb.r, bsb.w = io.Pipe()
 
-	bsb.hasData = make(chan bool, 1)
-	bsb.engineExit = make(chan bool)
+	bsb.hasData = make(chan struct{}, 1)
+	bsb.engineExit = make(chan struct{})
 	go bsb.engine()
 	return bsb
 }
@@ -47,12 +47,13 @@ func (b *BSBuffer) engine() {
 			b.Lock()
 			b.bufOut.ReadFrom(&b.bufIn)
 			_, err := b.bufOut.WriteTo(b.w)
-			b.Unlock()
 			if b.unblocked || err != nil {
 				b.r.Close()
 				close(b.engineExit)
+				b.Unlock()
 				return
 			}
+			b.Unlock()
 		}
 	}
 }
@@ -62,10 +63,10 @@ func (b *BSBuffer) engine() {
 // Supports multiple concurrent goroutines and p is valid forever.
 func (b *BSBuffer) Read(p []byte) (n int, err error) {
 	n, err = b.r.Read(p)
-	if b.unblocked && err != nil {
+	if err != nil {
 		if n != 0 {
-			// Last data from blocking mode engine.
-			// Clean error and push it up
+			// There might be remaining data in underlying buffer, and we want user to
+			// come back for it, so we clean the error and push data we have upwards
 			err = nil
 		} else {
 			// Unblocked and no data in engine.
@@ -95,7 +96,7 @@ func (b *BSBuffer) Write(p []byte) (n int, err error) {
 		// Push data to engine and wake it up, if needed.
 		n, err = b.bufIn.Write(p)
 		select {
-		case <-b.hasData:
+		case b.hasData <- struct{}{}:
 		default:
 		}
 	}
