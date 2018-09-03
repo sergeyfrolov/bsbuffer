@@ -7,8 +7,8 @@ package bsbuffer
 import (
 	"bytes"
 	"io"
-	"sync"
 	"io/ioutil"
+	"sync"
 )
 
 // BSBuffer:
@@ -16,19 +16,19 @@ import (
 // S - Safe - Supports arbitrary amount of readers and writers.
 // Could be unblocked and turned into SBuffer.
 type BSBuffer struct {
-	mu           sync.Mutex
+	mu sync.Mutex
 
 	bufBlocked   bytes.Buffer // used before Unblock() is called
 	bufUnblocked bytes.Buffer // used after Unblock() is called
 
-	r            *io.PipeReader
-	w            *io.PipeWriter
+	r *io.PipeReader
+	w *io.PipeWriter
 
-	unblocked    chan struct{} // closed on unblocking
-	engineExit   chan struct{} // after unblocking, engine will wrap up, close this and exit
-	hasData      chan struct{} // never closed
+	unblocked  chan struct{} // closed on unblocking
+	engineExit chan struct{} // after unblocking, engine will wrap up, close this and exit
+	hasData    chan struct{} // never closed
 
-	unblockOnce  sync.Once
+	unblockOnce sync.Once
 }
 
 // Creates new BSBuffer
@@ -38,7 +38,7 @@ func NewBSBuffer() *BSBuffer {
 	bsb.r, bsb.w = io.Pipe()
 
 	bsb.hasData = make(chan struct{}, 1)
-	bsb.unblocked = make(chan struct{}, 1)
+	bsb.unblocked = make(chan struct{})
 	bsb.engineExit = make(chan struct{})
 	go bsb.engine()
 	return bsb
